@@ -1,0 +1,549 @@
+---
+title: "pedreno_descriptivo"
+author: "Oscar Pedreño Fernandez"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: yes
+    number_sections: yes
+  pdf_document:
+    toc: yes
+---
+
+
+```{r setup,echo=FALSE,message=FALSE,warning=FALSE}
+# Eliminamos todos los comentarios de las chunks.
+knitr::opts_chunk$set(comment=NA)
+```
+
+Antes de nada vamos a cargar el dataset de Happiness:
+
+```{r carga_datos}
+happiness <- read.csv('Happiness-clean.csv')
+```
+
+# Estadística Descriptiva
+
+Como se nos guía en el ejercicio, para realizar este apartado vamos a usar `ggplot2` (para visualizar los gráficos) junto con `dplyr` (para calcular las medias). 
+
+Antes de nada, importamos las librerías comentadas:
+
+```{r carga_ggplot2_dplyr, message = FALSE, warning = FALSE}
+if(!require('dplyr')) install.packages('dplyr'); library('dplyr')
+if (!require('ggplot2')) install.packages('ggplot2'); library('ggplot2')
+if (!require('tidyr')) install.packages('tidyr'); library('tidyr')
+if (!require('gridExtra')) install.packages('gridExtra'); library('gridExtra')
+if (!require('RColorBrewer')) install.packages('RColorBrewer)'); library('RColorBrewer')
+```
+
+Luego usando, tal y como se nos comenta, la función `group_by()` y `summarise()` de `dplyr` para calcular las medias de cada variable por región:
+
+```{r medias_region}
+medias <- happiness %>%
+  group_by(Region) %>%
+  summarise(GpC = mean(GpC),
+            LE = mean(LE),
+            Freedom = mean(Freedom),
+            Family = mean(Family),
+            GC = mean(GC),
+            Generosity = mean(Generosity))
+```
+
+Para poder visualizar un gráfico por cada variable, vamos a realizar un bucle for que nos permita dividir la información. 
+
+
+```{r creacion_visualizaciones, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+# Creamos un vector con las diferentes variables que nos interesan.
+variables <- c("GpC", "Family", "Freedom", "Generosity", "LE", "GC")
+
+graficos <- list()
+
+for (variable in variables) {
+  grafico <- ggplot(medias, aes_string(x = variable, y = "Region", fill = "Region")) +
+    geom_bar(stat = "identity", width = 0.5) +
+    labs(title = paste("Comparación de medias por región -", variable),
+         x = "Región", y = "Media") +
+    theme_minimal() +
+    scale_fill_brewer(palette = "Spectral")
+  
+    graficos[[variable]] <- grafico
+}
+```
+
+## Interpretación gráficos
+
+### Variable GC
+
+```{r GC_summary, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+summary(happiness$GC)
+```
+
+```{r GC_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$GC
+```
+
+
+Como podemos observar en el gráfico de las medias por region de **GC**, la media más alta pertenece a Australia y Nueva Zelanda, seguido de Western Europe y North America, en cuanto a la media más baja se encuentra en Central and Eastern Europe. Además podemos ver como la media de la variable GC es 0.137.
+
+### Variable Family
+
+```{r Family_summary, message = FALSE, warning = FALSE}
+summary(happiness$Family)
+```
+
+```{r Family_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$Family
+```
+
+En cuanto a la variable **Family**, la media más alta sigue perteneciendo a Australia y Nueva Zelanda, seguido de Western Europe y North America, la media más baja pertenece a Southern Asia. Además podemos ver como la media de la variable Family es 0.793, podemos observar como la distribución de esta variable esta alrededor de la media para la mayoría de regiones.
+
+### Variable Freedom
+
+```{r Freedom_summary, message = FALSE, warning = FALSE}
+summary(happiness$Freedom)
+```
+
+```{r Freedom_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$Freedom
+```
+
+En cuanto a la variable **Freedom**, podemos seguir observando que la región con la media más alta es Australia y Nueva Zelanda, seguido de Norte América y Southeastern Asia, la media más baja pertenece a Central and Eastern Europe. La media de la variable Freedom es de 0.371. 
+
+### Variable LE
+
+```{r LE_summary, message = FALSE, warning = FALSE}
+summary(happiness$LE)
+```
+
+```{r LE_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$LE
+```
+En cuanto a la variable **LE** la media más alta sigue perteneciendo a Australia y Nueva zelanda, seguido de Western Europe y Eastern Asia. La media más baja pertenece a Sub-Saharan Africa. La media de la variable LE es de 0.557 
+
+
+### Variable GpC
+
+```{r GpC_summary, message = FALSE, warning = FALSE}
+summary(happiness$GpC)
+```
+
+```{r GpC_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$GpC
+```
+
+En cuanto a la variable **GpC**, tenemos que la región con la media más alta es Norte América, seguida de Western Europe y Austrialia y Nueva Zelanda. En cuanto a la región con la media de GpC más baja sería Sub-Saharan Africa. La media de la variable GpC es de 0.953.
+
+### Variable Generosity
+
+```{r Generosity_summary, message = FALSE, warning = FALSE}
+summary(happiness$Generosity)
+```
+
+```{r Generosity_Visualizacion, fig.height=4.8, fig.width=7, message = FALSE, warning = FALSE}
+graficos$Generosity
+```
+
+En cuanto a la variable **Generosity**, podemos ver que la región con la media más alta es Australia y Nueva Zelanda seguida de Southeastern Asia y Norte América. En cuanto a la media más baja es de Central and Eastern Europe. La media de la variable Generosity es de 0.242.
+
+```{r tabla1,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+tabla1 <- c(1, "Análisis descriptivo", "Análizamos las medias de cada variable para cada región", "A grandes rasgos podemos afirmar que las regiones con medias más altas para casi todas las variables son Australia y Nueva Zelanda, seguido de Norte América y Europa del Oeste.")
+```
+
+
+# Intervalo de confianza de la esperanza de vida (LE)
+
+En este caso, estamos trabajando sobre una muestra de una población, como no conocemos la desviación estándar poblacional, utilizaremos la distribución t-student en lugar de la distribución t-student.
+
+Para calcular el intervalo de confianza de la variable LE al 95%, debemos calcular las siguientes variables:
+* Tamaño de la muestra
+* Media muestral de la variable
+* Desviación estándar muestral de la variable
+* Error estándar de la variable (Desviación estandar dividido raíz cuadrada del tamaño de la muestra)
+* Valor crítico del nivel de confianza al 95%. (Mediante `qt()` nos devolverá el valor crítico de la distribución t-student con n-1 grados de libertad.)
+
+Una vez tenemos todo esto, para calcular el intervalo de confianza, cogemos la media +- el valor crítico multiplicado por el error estandar.
+
+
+```{r funcion_IC, message = FALSE, warning = FALSE}
+IC <- function(x, confianza = 0.95) {
+n <- length(x)
+media <- mean(x)
+err_est <- sd(x) / sqrt(n)
+# el valor crítico será la función qt para 
+valor_critico <- qt((1 - confianza) / 2, n - 1)
+limite_inferior <- media - valor_critico * err_est
+limite_superior <- media + valor_critico * err_est
+return(c(limite_inferior, limite_superior))
+}
+```
+
+Con la formula ya creada, lo único que debemos hacer es pasarle el parámetro `happiness$LE` con el nivel de confianza por defecto.
+
+```{r IC_LE,  message = FALSE, warning = FALSE}
+IC_LE <- IC(happiness$LE)
+IC_LE
+```
+Una vez tenemos toda esta información, vamos a proceder a dibujar el gráfico en cuestión:
+
+```{r plot_density_LE,  message = FALSE, warning = FALSE}
+plot(density(happiness$LE), main = "Distribución variable happiness$LE")
+```
+```{r summary_LE,  message = FALSE, warning = FALSE}
+summary(happiness$LE)
+```
+Como podemos observar en el gráfico y con la función `summary()`, la media de la variable LE se encuentra en el 0.5576, se trataría de una distribución normal por el metodo del límite central ya que la muestra empieza a ser suficiente suficientemente grande (n = 157). En cuanto al intervalo de confianza al 95% de significación, la media poblacional se encontraría dentro del rango (0.5214632, 0.5937748). Por encima y por debajo de este rango es considerado zona de rechazo. 
+
+```{r tabla2,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+tabla2 <- c(2, "IC 95% LE", "Realizamos un estudio del intervalo de confianza de la esperanza de vida (LE) al 95% de confianza.", "Como podemos observar en el gráfico y con la función `summary()`, la media de la variable LE se encuentra en el 0.5576, se trataría de una distribución normal por el metodo del límite central ya que la muestra empieza a ser suficiente suficientemente grande (n = 157). En cuanto al intervalo de confianza al 95% de significación, la media poblacional se encontraría dentro del rango (0.5214632, 0.5937748). Por encima y por debajo de este rango es considerado zona de rechazo.")
+```
+
+
+
+
+
+# Intervalo de confianza de LE de dos regiones
+
+Para este apartado vamos a crear una nueva columna en el dataframe y agrupar las regiones según su continente.
+
+```{r happiness$continent,  message = FALSE, warning = FALSE}
+# Utilizamos el operador %in% ya que nos facilita mucho la vida.
+happiness$Continent[happiness$Region %in% c("Central and Eastern Europe", "Western Europe")] <- "Europe"
+happiness$Continent[happiness$Region %in% c("Latin America and Caribbean", "North America")] <- "America"
+happiness$Continent[happiness$Region %in% c("Southeastern Asia", "Southern Asia", "Eastern Asia")] <- "Asia"
+happiness$Continent[happiness$Region %in% c("Sub-Saharan Africa", "Middle East and Northern Africa")] <- "Africa"
+happiness$Continent[happiness$Region == "Australia and New Zealand"] <- "Oceania"
+```
+
+Para realizar el intervalo de confianza de Africa y Europa para la variable LE. Procedemos a utilizar la función del apartado anterior pero solo para estas dos macro-regiones.
+
+Primero para **África**: 
+
+```{r IC_LE$Africa,  message = FALSE, warning = FALSE}
+IC_LE_Africa <- IC(happiness$LE[happiness$Continent == "Africa"])
+IC_LE_Africa
+```
+```{r plot_density_LE$Africa,  message = FALSE, warning = FALSE}
+plot(density(happiness$LE[happiness$Continent == "Africa"]), main = "Distribución variable happiness$LE en África")
+```
+```{r summary$Africa,  message = FALSE, warning = FALSE}
+summary(happiness$LE[happiness$Continent == "Africa"])
+```
+
+
+Seguido de **Europa**:
+
+```{r IC_LE$Europe,  message = FALSE, warning = FALSE}
+IC_LE_Europe <- IC(happiness$LE[happiness$Continent == "Europe"])
+IC_LE_Europe
+```
+```{r plot_density_LE$Europe,  message = FALSE, warning = FALSE}
+plot(density(happiness$LE[happiness$Continent == "Europe"]), main = "Distribución variable happiness$LE en África")
+```
+
+```{r summary$Europe,  message = FALSE, warning = FALSE}
+summary(happiness$LE[happiness$Continent == "Europe"])
+```
+
+Como podemos observar las diferencias son abismales con el nivel de significación al 95%, mientras que en África nuestro IC está entre el (0.3080331, 0.4227554) con una media muestral de 0.3654. Mientras que en Europa nuestro iC está en el rango (0.6801832,  0.7460968), con una media muestral de 0.713. En este sentido podemos decir que la variable LE en ambas regiones difiere significativamente teniendo una media muestral más elevada en Europa que en África.
+
+En el caso del nivel de confianza al 98% podemos ver lo siguente: 
+
+**África**
+
+```{r IC_LE$Africa_98,  message = FALSE, warning = FALSE}
+IC_LE_Africa_98 <- IC(happiness$LE[happiness$Continent == "Africa"], confianza = 0.98)
+IC_LE_Africa_98
+```
+```{r IC_LE$Europe_98,  message = FALSE, warning = FALSE}
+IC_LE_Europe_98 <- IC(happiness$LE[happiness$Continent == "Europe"], confianza = 0.98)
+IC_LE_Europe_98
+```
+En el caso del nivel de confianza al 98% podemos ver que las diferencias siguen siendo abismales. En este caso, como el nivel de confianza es del 98%, el intervalo se ha ampliado en ambos casos, esto se debe a que el área de rechazo se hace más pequeña, y por lo tanto, debemos incluir más casos en el rango de aceptación.
+En el caso del continente Africano hemos pasado de un rango al 95% de(0.3080331, 0.4227554) al del 98% de (.2968210 0.4339674), mientras que en el europeo al 95% era de (0.6801832,  0.7460968) y ahora, al 98% es de (0.67370 0.75258)
+
+
+```{r tabla3,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+tabla3 <- c(3, "IC 95% y 98% LE África y Europa", paste("IC LE Europa al 95% = ", IC_LE_Europe[1], ",", IC_LE_Europe[2], " , IC LE Europa al 98% = ", IC_LE_Europe_98[1],",", IC_LE_Europe_98[2], " , IC LE África al 95% = ", IC_LE_Africa[1],",",IC_LE_Africa[2], " , IC LE AFRICA al 98% = ", IC_LE_Africa_98[1],",",IC_LE_Africa_98[2]), "Como podemos observar las diferencias son abismales con el nivel de significación al 95%, mientras que en África nuestro IC está entre el (0.3080331, 0.4227554) con una media muestral de 0.3654. En Europa nuestro iC está en el rango (0.6801832,  0.7460968), con una media muestral de 0.713. En este sentido podemos decir que la variable LE en ambas regiones difiere significativamente teniendo una media muestral más elevada en Europa que en África. En el caso del nivel de confianza al 98% podemos ver que las diferencias siguen siendo abismales. En este caso, como el nivel de confianza es del 98%, el intervalo se ha ampliado en ambos casos, esto se debe a que el área de rechazo se hace más pequeña, y por lo tanto, debemos incluir más casos en el rango de aceptación.")
+```
+
+
+# Contraste de hipótesis sobre la esperanza de vida
+
+En este caso debemos crear dos hipótesis, la nula y la alternativa. 
+
+## Hipótesis nula y alternativa 
+
+$H_{0}: \mu=\mu_0$ &rarr; La media de esperanza de vida en Europa es igual a la Africana.
+
+$H_{1}: \mu\gt\mu_0$ &rarr; La media de esperanza de vida en Europa es superior a la Africana.
+
+## Tipo de contraste
+
+En este caso deberíamos usar el contraste de hipótesis de dos muestras independientes sobre la media con varianzas desconocidas diferentes.
+
+Por lo tanto nuestro estadístico será el siguiente:
+
+$t =\frac{x_1-x_2}{\frac{s^2_1}{\sqrt{n_1}}+\frac{s^2_2}{\sqrt{n_2}}}\sim t\upsilon$
+
+donde $\upsilon = \frac{(\frac{s^2_1}{n_1}+\frac{s^2_2}{n_2})}{\frac{(s^2_1/n_1)}{n_1 -1}+\frac{(s^2_2/n_2)}{n_2 -1}}$ siendo los grados de libertad del estadístico.
+
+## Cálculos
+
+Para realizar los cálculos primero debemos tener:
+
+* Media LE Europa
+* Desviación estándar Europa
+* Media LE Africa
+* Desviación estándar Africa
+* Tamaño de la muestra Europea
+* Tamaño de la muestra Africana
+* Grados de libertad
+
+```{r mediasysdAfricaEuropa,  message = FALSE, warning = FALSE}
+media_EU <- mean(happiness$LE[happiness$Continent == "Europe"])
+sd_EU <- sd(happiness$LE[happiness$Continent == "Europe"])
+media_AF <- mean(happiness$LE[happiness$Continent == "Africa"])
+sd_AF <- sd(happiness$LE[happiness$Continent == "Africa"])
+n_EU <- length(happiness$LE[happiness$Continent == "Europe"])
+n_AF <- length(happiness$LE[happiness$Continent == "Africa"])
+```
+
+Cuando tenemos toda esta información, podemos proceder a calcular el valor de t. 
+
+```{r t_obs4,  message = FALSE, warning = FALSE}
+t_obs4<- (media_EU - media_AF) / sqrt((sd_EU^2 / n_EU) + (sd_AF^2 / n_AF))
+t_obs4
+```
+
+Los grados de libertad de nuestra función son: 
+
+```{r grados_libertad4,  message = FALSE, warning = FALSE}
+grados_libertad4 <- ((sd_EU^2/n_EU + sd_AF^2/n_AF)^2)/((sd_EU^2/n_EU)^2/(n_EU-1) + (sd_AF^2/n_AF)^2/(n_AF-1))
+grados_libertad4
+```
+
+Con los grados de libertad calculados, procedemos a calcular el valor crítico utilizando la función `qt()`
+
+```{r valor_critico4,  message = FALSE, warning = FALSE}
+# El 0.02 representa el nivel de significación del contraste.
+valor_critico4 <- qt(1-0.02, grados_libertad4)
+valor_critico4
+```
+
+Con el valor crítico, procedemos a calcular el p-valor con la formula `pt()` es de: 
+
+```{r pvalor4,  message = FALSE, warning = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+p_valor4 <- pt(t_obs4, grados_libertad4, lower.tail = FALSE)
+p_valor4
+```
+
+## Interpretación
+
+Como podemos observar el p-valor es extramadamente bajo, lo que nos indica que podemos rechazar la hipótesis nula y aceptar la hipótesis alternativa. Por lo tanto podemos afirmar con cierta firmeza que la esperanza de vida en Europa es significativamente mayor que en África al 98% de confianza.
+
+```{r tabla4,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+resultado4 <- c(p_valor4, t_obs4, valor_critico4)
+tabla4 <- c(4, "La esperanza de vida en Europa es significativamente mayor que en África al 98 de confianza?", paste("p valor = ", resultado4[1], " , valor observado = ", resultado4[2], "valor crítico = ", resultado4[3] ), "Como podemos observar el p-valor es extramadamente bajo, lo que nos indica que podemos rechazar la hipótesis nula y aceptar la hipótesis alternativa. Por lo tanto podemos afirmar con cierta firmeza que la esperanza de vida en Europa es significativamente mayor que en África al 98% de confianza.")
+```
+
+# Contraste de hipótesis en relación a la familia
+
+## Hipótesis nula y alternativa
+
+$H_{0}: \mu=\mu_0$ &rarr; La media de la variable familia en Western Europe es igual a la de Southern Asia.
+
+$H_{1}: \mu\neq\mu_0$ &rarr; La media de la variable familia en Western Europe es significativamente diferente a la de Southern Asia.
+
+## Tipo de contraste
+
+En este caso, como nos encontramos ante dos muestras consideradas pequeñas y nos han dicho que podemos asumir igualdad de varianzas, vamos a usar el test de **suma de rangos de Wilcoxon**. Se utiliza cuando la variable subyacente es continua pero no se presupone ningún tipo de distribución particular.
+
+## Aplicación del test
+
+Para aplicar el test usaremos la formula predefinida de `wilcox.test()`, para ello tenemos que crear dos variables, una para cada subset y compararlo en la alternativa two.sided al 95% de confianza.
+
+```{r testwilcox,  message = FALSE, warning = FALSE}
+Family_WestEurope <- happiness$Family[happiness$Region == "Western Europe"]
+Family_SouthAsia <- happiness$Family[happiness$Region == "Southern Asia"]
+# Aplicamos el test wilcoxon
+wilcox <- wilcox.test(Family_SouthAsia, Family_WestEurope, alternative = "two.sided", conf.level = 0.95, conf.int = TRUE)
+resultado5 <- c(p_value = wilcox$p.value, valor_observado = wilcox$statistic)
+```
+## Interpretación
+
+Como podemos observar en el resultado de la función `wilcox.test()` uno de los valores que nos devuelve es el p-valor (5.067e-05). Como podemos comprobar se trata de un valor muy pequeño,  lo que nos indica que hay suficiente evidencia estadística para rechazar la hipotesis nula. 
+
+Por lo tanto podriamos decir que hay diferencias significativas en el valor de Family entre las regiones Southern Asia y Western Europe.
+
+## Cálculos 
+
+Como se explica en los apuntes de la asignatura (pdf Contrastes de hipótesis), el test de rangos y signos de Wilcoxon se aplica de la manera siguiente:
+
+* Se calculan las diferencias di entre cada valor de la muestra y la mediana.
+* Se ordenan las diferencias di en orden creciente según su valor absoluto.
+* Se cuentan el número de diferencias con el mismo valor absoluto.
+* Se ignoran las observaciones en las que di = 0.
+* Si un grupo con varias observaciones tiene el mismo valor absoluto, hay
+que asignar el rango medio, es decir: (rango menor + rango mayor) / 2.
+* Se calcula W como la suma de rangos positivos.
+
+```{r tabla5,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+tabla5 <- c(5, "Existen diferencias significativas en el valor de Family entre las regiones Southern Asia y Western Europe con un nivel de confianza del 95?", paste("p_value = ", resultado5[1], ", obs = ", resultado5[2]) , "Como podemos observar en el resultado de la función `wilcox.test()` uno de los valores que nos devuelve es el p-valor (5.067e-05). Como podemos comprobar se trata de un valor muy pequeño,  lo que nos indica que hay suficiente evidencia estadística para rechazar la hipotesis nula. 
+Por lo tanto podriamos decir que hay diferencias significativas en el valor de Family entre las regiones Southern Asia y Western Europe.")
+```
+
+
+# Contraste de hipótesis sobre la felicidad
+
+Para realizar este ejercicio, vamos a apoyarnos en columna de continente creada en apartados anteriores.
+
+## Hipótesis nula y alternativa
+
+$H_{0}: p_1=p_2$ &rarr; La proporción de paises con un valor HS inferior a 6 es igual en los países de Asia respecto a los Africanos.
+
+$H_{1}: p_1 < p_2$ &rarr; La proporción de paises con un valor HS inferior a 6 es inferior en los países de Asia respecto a los Africanos.
+
+## Test
+
+Para este caso, como se trata de dos proporciones independientes entre sí (Paises de África Vs Paises de Ásia), vamos a usar la prueba Z de comparación de proporciones. El resultado de este test nos devolvera un valor p y si este valor es menor que el nivel de significación del 95%, rechazaremos la hipótesis nula.
+
+## Cálculo de las proporciones
+
+Para este apartado usarmos la función `filter()` junto con la `summarize()`:
+
+```{r calculo_proporciones,  message = FALSE, warning = FALSE}
+# Para el dataset happiness, filtramos por la columna continent y su valor y generamos un summarize de la suma de paises con HS inferior a 6 y lo dividimos por el total de registros.
+proporcion_asia <- happiness %>%
+  filter(Continent == "Asia") %>%
+  summarize(proporcion = sum(HS < 6) / n())
+
+proporcion_africa <- happiness %>%
+  filter(Continent == "Africa") %>%
+  summarize(proporcion = sum(HS < 6) / n())
+
+proporcion_asia
+proporcion_africa
+```
+
+Como podemos observar la proporción de paises de Ásia con las condiciones establecidas es de 0.818, mientras que en Africa es de 0.877
+
+## Desarrollo del contraste
+
+Como hemos dicho usaremos el estadístico Z, su formula es la siguiente:
+
+$Z = \frac{\hat p_1 - \hat p_2}{\sqrt{\frac{\hat p(1-\hat p)}{n_1}+\frac{\hat p(1-\hat p)}{n_2}}}$
+
+Donde $\hat p_1$ y $\hat p_2$ son las proporciones muestrales de países cn un valor HS inferior a 6 en los países de Asia y África y $\hat p$ es la proporcion muestral combinada y se calcula como: 
+
+$\hat p = \frac{n_1\hat p_1 + n_2\hat p_2}{n_1 + n_2}$
+
+Primero vamos a calcular el $\hat p$:
+
+```{r hat_p,  message = FALSE, warning = FALSE}
+n1p1 <- sum(happiness %>% filter(Continent == "Asia") %>% select(HS) < 6)
+n2p2 <- sum(happiness %>% filter(Continent == "Africa") %>% select(HS) < 6)
+n1 <- length(happiness$HS[happiness$Continent == "Asia"])
+n2 <- length(happiness$HS[happiness$Continent == "Africa"])
+
+p_hat <- (n1p1 + n2p2) / (n1+n2)
+```
+
+Una vez tenemos la proporción combinada procedemos a calcular el estadístico Z: 
+
+```{r estadístico_z,  message = FALSE, warning = FALSE}
+asia <- filter(happiness, Continent == "Asia")
+africa <- filter(happiness, Continent == "Africa")
+z <- (proporcion_asia - proporcion_africa) / sqrt(p_hat * (1 - p_hat) * (1/length(happiness$HS[happiness$Continent == "Asia"]) + 1/length(happiness$HS[happiness$Continent == "Africa"])))
+
+z <- as.numeric(z)
+
+z
+```
+El valor del estadístico Z nos da -0.67911 lo que indica que la proporción de países con un valor de HS inferior a 6 es menor en los paises de Asia (p1) en comparación con los paises africanos (p2).
+
+Finalmente, mostramos los resultados del test mediante `pnorm()` y `qnorm()`:
+
+```{r resultados_test_z,  message = FALSE, warning = FALSE}
+p_valor6 <- pnorm(z)
+alpha <- 0.05
+valor_critico <- qnorm(alpha)
+# ponemos en un vector los resultados que nos interesan, el p-valor, z (resultado del estadístico y valor observado y, por último, el valor crítico)
+resultados_6 <- c(p_valor = p_valor6, valor_observado = z, valor_critico = valor_critico)
+resultados_6
+```
+## Interpretación del test
+
+El p-valor es de 0.248, lo que significa que la probabilidad de obtener una diferencia en las proporciones muestrales es del 2.48%. Así, como el p-valor es menor que el nivel de significación del ejercicio (0.05), rechazamos la hipótesis nula y podemos afirmar que hay evidencia estadística para decir que la proporción de países con un valor de HS inferior a 6 es menor en los países de Asia en comparación con los países de Africa.
+
+```{r tabla6,  message = FALSE, warning = FALSE, echo = FALSE}
+# Usamos lower.tail = FALSE para referirnos solo a los valores que tenga a su derecha.
+tabla6 <- c(6, "Existen diferencias significativas en el valor de Family entre las regiones Southern Asia y Western Europe con un nivel de confianza del 95?", paste("p valor = ", resultados_6[1], " ,valor observado = ", resultados_6[2], " ,valor_critico = ", resultados_6[3]) , "El p-valor es de 0.248, lo que significa que la probabilidad de obtener una diferencia en las proporciones muestrales es del 2.48%. Así, como el p-valor es menor que el nivel de significación del ejercicio (0.05), rechazamos la hipótesis nula y podemos afirmar que hay evidencia estadística para decir que la proporción de países con un valor de HS inferior a 6 es menor en los países de Asia en comparación con los países de Africa.")
+```
+
+# Tabla resumen
+
+```{r libraries table, echo = FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+library(kableExtra)
+```
+
+```{r resumen_preprocesamiento_df, echo=FALSE, warning = FALSE, comment=FALSE}
+# Creamos el dataframe a partir de todos los vectores de preprocesamiento que hemos ido creando a lo largo del rmd.
+matrix <- rbind(tabla1, tabla2, tabla3, tabla4, tabla5, tabla6)
+
+resumen_preprocesamiento <- as.data.frame(matrix, row.names=FALSE)
+```
+
+
+```{r resumen_preprocesamiento_tabla, echo=FALSE}
+
+tabla_resumen <- kable(resumen_preprocesamiento, caption ="Resumen del preprocesamiento",  col.names = c("Apartado", "Pregunta", "Resultado", "Conclusion")) %>%
+  column_spec(2:3, width = "22em") %>%
+  kable_styling(latex_options = c("HOLD_position"))
+
+tabla_resumen
+```
+
+# Resumen Ejecutivo
+
+Se ha empezado con el análisis descriptivo e inferencial del conjunto de datos happiness, el cual contiene los datos de una muestra de ciudadanos de diferentes paises categorizados por regiones, respondiendo a preguntas relacionadas con la felicidad en sus respectivos paises. Entre otras variables, el conjunto de datos contiene datos sobre la libertad (Freedom), familia (Family), Economía (GpC), la region en la que se encuentra cada país, etc. Todas estas variables suman la nota de felicidad y su ranking comparativo entre paises.
+
+En base a estos datos, se han obtenido un conjunto de conclusiones que se resumen a continuación. Las conclusiones se extraen entre el 95 y el 98% de confianza, y se pueden generalizar para la poblacion total de cada uno de los paises incluidos en el dataset, asumiendo que la muestra analizada sea suficientemente representativa de la población.
+
+* La variable Life Expectancy (LE) toma un valor entre 0.5214632, 0.5937748 al 95% de confianza. Nuestra media muestral es de 0.5576.
+* La variable Life Expectancy (LE) en los paises europeos toma un valor entre 0.6801832,  0.7460968 al 95% de confianza y 0.67370 0.75258 al 98% de confianza.
+* La variable Life Expectancy (LE) en los paises africanos toma un valor entre 0.3080331, 0.4227554 al 95% de confianza y 0.2968210 0.4339674 al 98% de confianza.
+* Al 98% de confianza se comprueba que la esperanza de vida en Europa es significativamente mayor que en África.
+* Al 95% de confianza y con evidencia estadística existen diferencias significativas en el valor de Family entre las regiones Southern Asia y Western Europe.
+* Al 95% de confianza y se puede afirmar que la proporción de países con un valor de felicidad (HS) inferior a 6 es menor en los países de Asia en comparación con los países de África.
+
+
+# Bibliografía
+
+* https://elartedeldato.com/blog/como-cambiar-el-color-de-un-grafico-en-ggplot
+* https://stackoverflow.com/questions/61537463/size-of-plot-in-r-markdown
+* https://r-coder.com/listas-r/
+* https://stackoverflow.com/questions/27125672/what-does-function-mean-in-r
+* https://www.statology.org/working-with-the-student-t-distribution-in-r-dt-qt-pt-rt/
+* https://es.wikipedia.org/wiki/Error_est%C3%A1ndar
+* https://es.wikipedia.org/wiki/Intervalo_de_confianza
+* https://www.r-tutor.com/elementary-statistics/probability-distributions/student-t-distribution
+* https://www.rdocumentation.org/packages/graphics/versions/3.6.2/topics/polygon
+* https://sparkbyexamples.com/r-programming/usage-of-in-operator-in-r/
+* https://www.datamentor.io/r-programming/if-else-statement/
+* https://sparkbyexamples.com/r-programming/r-subset-multiple-conditions/
+* https://aprender-uib.github.io/AprendeR2/extras-de-r-markdown.html
+* https://www.ionos.com/digitalguide/websites/web-development/markdown/
+* https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4111019/
+* https://www.statology.org/working-with-the-student-t-distribution-in-r-dt-qt-pt-rt/
+* https://es.wikipedia.org/wiki/Prueba_de_los_rangos_con_signo_de_Wilcoxon
+* https://rsanchezs.gitbooks.io/rprogramming/content/chapter9/select.html
+* https://www.digitalocean.com/community/tutorials/sum-in-r
+* https://www.digitalocean.com/community/tutorials/paste-in-r
+
